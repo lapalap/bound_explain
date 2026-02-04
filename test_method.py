@@ -54,29 +54,36 @@ def _write_centroid_text_csv(
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    output_dir = Path("/dss/dssfs05/lwp-dss-0003/pn39yu/pn39yu-dss-0001/projects/kbykov/boundary_explain/test")
+    output_dir = Path("/dss/dssfs05/lwp-dss-0003/pn39yu/pn39yu-dss-0001/projects/kbykov/boundary_explain/test_hard")
     explainer = BoundaryExplainer(
         vocab_h5_path="/dss/dssfs05/lwp-dss-0003/pn39yu/pn39yu-dss-0001/projects/kbykov/pfad/vocabulary/wordnet/vocab_embeddings_siglip2.h5",
         control_h5_path="/dss/dssfs05/lwp-dss-0003/pn39yu/pn39yu-dss-0001/projects/kbykov/pfad/runs/OpenImages/siglip2_train/embeddings.h5",
-        dataset_a_dir="/dss/dsshome1/0C/go38maz2/data/1_a",
-        dataset_b_dir="/dss/dsshome1/0C/go38maz2/data/1_b",
+        # easy
+        #dataset_a_dir="/dss/dsshome1/0C/go38maz2/data/1_a",
+        #dataset_b_dir="/dss/dsshome1/0C/go38maz2/data/1_b",
+        # medium
+        #dataset_a_dir="/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/VisDiffBench/medium/1_a",
+        #dataset_b_dir="/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/VisDiffBench/medium/1_b",
+        # hard
+        dataset_a_dir="/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/VisDiffBench/hard/3_a",
+        dataset_b_dir="/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/VisDiffBench/hard/3_b",
         output_dir=str(output_dir),
         train_val_split=0.8,
         seed=42,
-        batch_size=512,
-        num_workers=16,
+        batch_size=128,
+        num_workers=4,
         device="cuda",
         num_epochs=8,
-        max_omp_components=12,
-        omp_cos_stop=0.80,
         top_text_neighbors=8,
         top_control_images=20,
-        intra_reg_weight=1.5,
-        intra_reg_topk=15,
-        omp_nonnegative=False,
-        regularization_multiplier=1.0,
-        l2_weight=1e-2,
-        centroid_reg_multiplier=100000.0,
+        use_vocab_basis=False,  # Set True to constrain w = normalize(V @ a).
+        lambda_l1=1e-4,
+        lambda_ctrl=0.0025,
+        control_topk=10,
+        a_threshold=1e-4,
+        learn_temperature=False,
+        tau_init=1.0,
+        control_subsample=50000,
     )
     explainer.collect_activations(force=True)
     explainer.train_decision_boundary(force=True)
